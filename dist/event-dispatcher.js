@@ -347,9 +347,6 @@ let lastTime = 0;
 let totalElapsedTime = 0;
 let elapsedSinceLastLoop = 0;
 const events = new EventDispatcher();
-events.addEventListener('onframe', () => {
-    requestAnimationFrame(render);
-});
 function render(currentTime) {
     if (isStopped) {
         requestAnimationFrame(render);
@@ -358,7 +355,11 @@ function render(currentTime) {
     totalElapsedTime = currentTime - startingTime;
     elapsedSinceLastLoop = currentTime - lastTime;
     lastTime = currentTime;
-    events.dispatchEventAsAsync('onframe', new FrameEvent(currentTime, (isPaused ? 0 : elapsedSinceLastLoop), totalElapsedTime));
+    events
+        .dispatchEventAsAsync('onframe', new FrameEvent(currentTime, (isPaused ? 0 : elapsedSinceLastLoop), totalElapsedTime))
+        .then(() => {
+        requestAnimationFrame(render);
+    });
 }
 requestAnimationFrame((currentTime) => {
     isStopped = false;
@@ -393,11 +394,11 @@ class FrameHandler {
 
 ;// CONCATENATED MODULE: ./src/api.ts
 function toGlobal(root) {
-    root['wait'] = wait;
-    root['waiter'] = waiter;
-    root['Observer'] = Observer;
-    root['EventDispatcher'] = EventDispatcher;
-    root['FrameHandler'] = FrameHandler;
+    root['wait'] = root['wait'] ? root['wait'] : wait;
+    root['waiter'] = root['waiter'] ? root['waiter'] : waiter;
+    root['Observer'] = root['Observer'] ? root['Observer'] : Observer;
+    root['EventDispatcher'] = root['EventDispatcher'] ? root['EventDispatcher'] : EventDispatcher;
+    root['FrameHandler'] = root['FrameHandler'] ? root['FrameHandler'] : FrameHandler;
 }
 const Api = toGlobal;
 
@@ -411,5 +412,4 @@ catch(err)
   console.error(err);
 }
 
-/******/ })()
-;
+/******/ })();

@@ -25,9 +25,6 @@ let totalElapsedTime: number = 0;
 let elapsedSinceLastLoop: number = 0;
 
 const events: EventDispatcher = new EventDispatcher();
-events.addEventListener('onframe', () => {
-  requestAnimationFrame(render);
-});
 
 function render(currentTime: number) {
   if (isStopped) {
@@ -40,7 +37,11 @@ function render(currentTime: number) {
   elapsedSinceLastLoop = currentTime - lastTime;
   lastTime = currentTime;
 
-  events.dispatchEventAsAsync('onframe', new FrameEvent(currentTime, (isPaused ? 0 : elapsedSinceLastLoop), totalElapsedTime))
+  events
+    .dispatchEventAsAsync('onframe', new FrameEvent(currentTime, (isPaused ? 0 : elapsedSinceLastLoop), totalElapsedTime))
+    .then(() => {
+      requestAnimationFrame(render);
+    });
 }
 
 requestAnimationFrame((currentTime: number) => {
