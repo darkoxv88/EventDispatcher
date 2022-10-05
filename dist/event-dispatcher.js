@@ -169,7 +169,7 @@ class Observer {
         }
         catch (err) {
             if (typeof (this._onError) === 'function') {
-                this._onError(ev);
+                this._onError(err);
             }
         }
         finally {
