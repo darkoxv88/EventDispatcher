@@ -84,6 +84,8 @@ declare class EventDispatcher {
 
   public getEventObservers<T>(type: string): Array<Observer<T>>;
 
+  public dispatchEvent<T>(type: string, event: T): void;
+
   public dispatchEventAsAsync<T>(type: string, event: T): Promise<void>;
 
 }
