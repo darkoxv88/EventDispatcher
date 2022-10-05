@@ -29,6 +29,7 @@ exports:
 	window.waiter;
 	window.Observer;
     window.EventDispatcher;
+    window.FrameEvent;
 	window.FrameHandler;
 
 **/
@@ -398,11 +399,13 @@ function toGlobal(root) {
     root['waiter'] = root['waiter'] ? root['waiter'] : waiter;
     root['Observer'] = root['Observer'] ? root['Observer'] : Observer;
     root['EventDispatcher'] = root['EventDispatcher'] ? root['EventDispatcher'] : EventDispatcher;
+    root['FrameEvent'] = root['FrameEvent'] ? root['FrameEvent'] : FrameEvent;
     root['FrameHandler'] = root['FrameHandler'] ? root['FrameHandler'] : FrameHandler;
 }
 const Api = toGlobal;
 
 ;// CONCATENATED MODULE: ./src/index.js
+
 try
 {
 	Api(getRoot());

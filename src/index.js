@@ -33,6 +33,7 @@ exports:
 	window.waiter;
 	window.Observer;
   window.EventDispatcher;
+	window.FrameEvent;
 	window.FrameHandler;
 
 **/
