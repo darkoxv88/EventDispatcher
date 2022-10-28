@@ -31,7 +31,7 @@ exports:
 
 	window.wait;
 	window.waiter;
-	window.Observer;
+	window.EventDispatcherObserver;
   window.EventDispatcher;
 	window.FrameEvent;
 	window.FrameHandler;
