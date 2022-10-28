@@ -39,7 +39,10 @@ function render(currentTime: number) {
 
   events
     .dispatchEventAsAsync('onframe', new FrameEvent(currentTime, (isPaused ? 0 : elapsedSinceLastLoop), totalElapsedTime))
-    .then(() => {
+    .catch((err) => {
+      logError(err);
+    })
+    .finally(() => {
       requestAnimationFrame(render);
     });
 }

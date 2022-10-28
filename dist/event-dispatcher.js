@@ -29,7 +29,7 @@ exports:
 	window.waiter;
 	window.Observer;
     window.EventDispatcher;
-    window.FrameEvent;
+	window.FrameEvent;
 	window.FrameHandler;
 
 **/
@@ -46,12 +46,8 @@ function getRoot() {
 
 ;// CONCATENATED MODULE: ./src/utility/wait.ts
 function wait(duration) {
-    duration = (typeof (duration) === 'number') ? duration : 0;
-    duration = (duration >= 0) ? duration : 0;
     return new Promise((res) => {
-        setTimeout(() => {
-            res();
-        }, duration);
+        setTimeout(() => res(), (typeof (duration) === 'number') ? duration : 0);
     });
 }
 
@@ -358,7 +354,10 @@ function render(currentTime) {
     lastTime = currentTime;
     events
         .dispatchEventAsAsync('onframe', new FrameEvent(currentTime, (isPaused ? 0 : elapsedSinceLastLoop), totalElapsedTime))
-        .then(() => {
+        .catch((err) => {
+        logError(err);
+    })
+        .finally(() => {
         requestAnimationFrame(render);
     });
 }
@@ -397,7 +396,7 @@ class FrameHandler {
 function toGlobal(root) {
     root['wait'] = root['wait'] ? root['wait'] : wait;
     root['waiter'] = root['waiter'] ? root['waiter'] : waiter;
-    root['Observer'] = root['Observer'] ? root['Observer'] : Observer;
+    root['EventDispatcherObserver'] = root['EventDispatcherObserver'] ? root['EventDispatcherObserver'] : Observer;
     root['EventDispatcher'] = root['EventDispatcher'] ? root['EventDispatcher'] : EventDispatcher;
     root['FrameEvent'] = root['FrameEvent'] ? root['FrameEvent'] : FrameEvent;
     root['FrameHandler'] = root['FrameHandler'] ? root['FrameHandler'] : FrameHandler;
@@ -405,7 +404,6 @@ function toGlobal(root) {
 const Api = toGlobal;
 
 ;// CONCATENATED MODULE: ./src/index.js
-
 try
 {
 	Api(getRoot());

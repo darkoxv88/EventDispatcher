@@ -39,7 +39,7 @@ export class EventDispatcher {
     {
       return this.__listeners_[type].get(listener) ? true : false;
     }
-    catch (err)
+    catch(err)
     {
       return false;
     }

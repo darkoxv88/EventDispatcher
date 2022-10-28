@@ -40,7 +40,6 @@ export class Observer<T> {
       this._onError = fn;
     }
 
-
     return this;
   }
 

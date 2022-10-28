@@ -27,7 +27,7 @@ exports:
 
   window.wait;
 	window.waiter;
-	window.Observer;
+	window.EventDispatcherObserver;
   window.EventDispatcher;
 	window.FrameHandler;
 
@@ -36,7 +36,7 @@ exports:
 declare function wait(duration: number): Promise<void>;
 declare function waiter(thisArg: Object | null, generator: Function): Promise<any>;
 
-declare class Observer<T> {
+declare class EventDispatcherObserver<T> {
 
   private _isSubscribed: boolean;
 
@@ -50,11 +50,11 @@ declare class Observer<T> {
 
   public destructor(): void;
 
-  public subscribe(fn: any, once?: boolean): Observer<T>;
+  public subscribe(fn: any, once?: boolean): EventDispatcherObserver<T>;
 
-  public catch(fn: any): Observer<T>;
+  public catch(fn: any): EventDispatcherObserver<T>;
 
-  public finally(fn: Function): Observer<T>;
+  public finally(fn: Function): EventDispatcherObserver<T>;
 
   public performObservation(ev: T): void;
 
@@ -70,19 +70,19 @@ declare class Observer<T> {
 
 declare class EventDispatcher {
 
-  private __listeners_: { [ key: string ]: Map<Function, Observer<any>> }
+  private __listeners_: { [ key: string ]: Map<Function, EventDispatcherObserver<any>> }
 
   constructor();
 
   public addEventType(type: string): void;
 
-  public addEventListener<T = any>(type: string, listener: (e: any) => void, once?: boolean): Observer<T>;
+  public addEventListener<T = any>(type: string, listener: (e: any) => void, once?: boolean): EventDispatcherObserver<T>;
 
   public hasEventListener(type: string, listener: (e: any) => void): boolean;
 
   public removeEventListener(type: string, listener: (e: any) => void): void;
 
-  public getEventObservers<T>(type: string): Array<Observer<T>>;
+  public getEventObservers<T>(type: string): Array<EventDispatcherObserver<T>>;
 
   public dispatchEvent<T>(type: string, event: T): void;
 
@@ -108,7 +108,7 @@ declare class FrameHandler {
   
   public static resume(): void;
 
-  private _observer: Observer<FrameEvent>;
+  private _observer: EventDispatcherObserver<FrameEvent>;
 
   constructor(listener: (ev: FrameEvent) => void);
 

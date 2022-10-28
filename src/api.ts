@@ -7,7 +7,7 @@ import { FrameEvent, FrameHandler } from './core/frame-handler';
 function toGlobal(root: any): void {
   root['wait'] = root['wait'] ? root['wait'] : wait;
   root['waiter'] = root['waiter'] ? root['waiter'] : waiter;
-  root['Observer'] = root['Observer'] ? root['Observer'] : Observer;
+  root['EventDispatcherObserver'] = root['EventDispatcherObserver'] ? root['EventDispatcherObserver'] : Observer;
   root['EventDispatcher'] = root['EventDispatcher'] ? root['EventDispatcher'] : EventDispatcher;
   root['FrameEvent'] = root['FrameEvent'] ? root['FrameEvent'] : FrameEvent;
   root['FrameHandler'] = root['FrameHandler'] ? root['FrameHandler'] : FrameHandler;
