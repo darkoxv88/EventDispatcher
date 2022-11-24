@@ -25,6 +25,10 @@ export class Observer<T> {
   }
 
   public subscribe(fn: any, once?: boolean): Observer<T> {
+    if (this.isSubscribed() == false) {
+      return this;
+    }
+
     if (typeof(fn) !== 'function' || typeof(this._fn) === 'function') {
       return this;
     }
@@ -52,6 +56,10 @@ export class Observer<T> {
   }
 
   public performObservation(ev: T): void {
+    if (this.isSubscribed() == false) {
+      return;
+    }
+
     if (this._once) {
       this.unsubscribe();
     }
@@ -77,6 +85,12 @@ export class Observer<T> {
   }
 
   public asPromise(ev: T): Promise<void> {
+    if (this.isSubscribed() == false) {
+      return waiter(this, function* () { 
+        return; 
+      });
+    }
+
     if (this._once) {
       this.unsubscribe();
     }
@@ -100,6 +114,8 @@ export class Observer<T> {
           yield this._onFinally();
         }
       }
+
+      return;
     });
   }
 

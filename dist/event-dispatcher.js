@@ -135,6 +135,9 @@ class Observer {
         this._onFinally = null;
     }
     subscribe(fn, once) {
+        if (this.isSubscribed() == false) {
+            return this;
+        }
         if (typeof (fn) !== 'function' || typeof (this._fn) === 'function') {
             return this;
         }
@@ -155,6 +158,9 @@ class Observer {
         return this;
     }
     performObservation(ev) {
+        if (this.isSubscribed() == false) {
+            return;
+        }
         if (this._once) {
             this.unsubscribe();
         }
@@ -175,6 +181,11 @@ class Observer {
         }
     }
     asPromise(ev) {
+        if (this.isSubscribed() == false) {
+            return waiter(this, function* () {
+                return;
+            });
+        }
         if (this._once) {
             this.unsubscribe();
         }
@@ -194,6 +205,7 @@ class Observer {
                     yield this._onFinally();
                 }
             }
+            return;
         });
     }
     getListener() {
