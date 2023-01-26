@@ -26,12 +26,12 @@ export class EventDispatcher {
     this.addEventType(type);
 
     if (this.__listeners_[type].get(listener) instanceof Observer) {
-      return this.__listeners_[type].get(listener).subscribe(listener);
+      return this.__listeners_[type].get(listener);
     }
 
-    this.__listeners_[type].set(listener, new Observer<any>());
+    this.__listeners_[type].set(listener, new Observer<any>(listener, once));
 
-    return this.__listeners_[type].get(listener).subscribe(listener, once);
+    return this.__listeners_[type].get(listener);
   }
 
   public hasEventListener(type: string, listener: (e: any) => void): boolean {
@@ -82,11 +82,7 @@ export class EventDispatcher {
       const target: Function = proc[0];
       const observer: Observer<T> = proc[1];
 
-      if (target !== observer.getListener()) {
-        observer.unsubscribe();
-      }
-
-      if (observer.isSubscribed() === false) {
+      if (target !== observer.getListener() || observer.isSubscribed() === false) {
         observer.destructor();
         procs.delete(target);
 
@@ -122,12 +118,8 @@ export class EventDispatcher {
       for (const proc of procs) {
         const target: Function = proc[0];
         const observer: Observer<T> = proc[1];
-        
-        if (target !== observer.getListener()) {
-          observer.unsubscribe();
-        }
   
-        if (observer.isSubscribed() === false) {
+        if (target !== observer.getListener() || observer.isSubscribed() === false) {
           observer.destructor();
           procs.delete(target);
   
@@ -137,7 +129,7 @@ export class EventDispatcher {
         try
         {
           const start: number = performance.now();
-          yield observer.asPromise(event);
+          yield observer.performObservationAsAsync(event);
           const end: number = performance.now();
           performanceViolationCheck(type, end - start);
         }

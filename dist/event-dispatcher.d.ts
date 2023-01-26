@@ -26,7 +26,6 @@
 exports:
 
   window.wait;
-	window.waiter;
 	window.EventDispatcherObserver;
   window.EventDispatcher;
 	window.FrameHandler;
@@ -34,31 +33,26 @@ exports:
 **/
 
 declare function wait(duration: number): Promise<void>;
-declare function waiter(thisArg: Object | null, generator: Function): Promise<any>;
 
 declare class EventDispatcherObserver<T> {
 
-  private _isSubscribed: boolean;
-
-  private _fn: Function;
-  private _onError: Function;
-  private _onFinally: Function;
+  private _listener: Function;
+  private _onError: (err: any) => void;
+  private _onFinally: () => void;
 
   private _once: boolean;
 
-  constructor();
+  constructor(listener: (ev?: T) => void, once?: boolean);
 
   public destructor(): void;
 
-  public subscribe(fn: any, once?: boolean): EventDispatcherObserver<T>;
+  public catch(fn: (err: any) => void): EventDispatcherObserver<T>;
 
-  public catch(fn: any): EventDispatcherObserver<T>;
-
-  public finally(fn: Function): EventDispatcherObserver<T>;
+  public finally(fn: () => void): EventDispatcherObserver<T>;
 
   public performObservation(ev: T): void;
 
-  public asPromise(ev: T): Promise<void>;
+  public performObservationAsAsync(ev: T): Promise<void>;
 
   public getListener(): Function;
 
@@ -95,6 +89,8 @@ declare class FrameEvent {
   public readonly currentTime: number;
   public readonly deltaTime: number;
   public readonly totalElapsedTime: number;
+
+  constructor(currentTime: number, deltaTime: number, totalElapsedTime: number);
 
 }
 

@@ -26,7 +26,6 @@
 exports:
 
 	window.wait;
-	window.waiter;
 	window.EventDispatcherObserver;
     window.EventDispatcher;
 	window.FrameEvent;
@@ -36,7 +35,6 @@ exports:
 
 /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
-var __webpack_exports__ = {};
 
 ;// CONCATENATED MODULE: ./src/refs/root.ts
 var root = typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : typeof self !== 'undefined' ? self : ({});
@@ -51,8 +49,10 @@ function wait(duration) {
     });
 }
 
-;// CONCATENATED MODULE: ./src/utility/waiter.ts
+;// CONCATENATED MODULE: ./src/utility/noop.ts
+function noop() { }
 
+;// CONCATENATED MODULE: ./src/utility/waiter.ts
 let _isES6 = false;
 try {
     if (!Promise) {
@@ -116,34 +116,24 @@ function waiter(thisArg, generator) {
     }
 }
 
-;// CONCATENATED MODULE: ./src/utility/noop.ts
-function noop() { }
-
 ;// CONCATENATED MODULE: ./src/event-dispatcher/observer.ts
-
-
+function asFunc(fn) {
+    if (typeof (fn) !== 'function' || !fn) {
+        return null;
+    }
+    return fn;
+}
 class Observer {
-    constructor() {
-        this._isSubscribed = true;
-        this._fn = null;
+    constructor(listener, once) {
+        this._listener = asFunc(listener);
         this._onError = noop;
         this._onFinally = noop;
+        this._once = once ? true : false;
     }
     destructor() {
-        this._fn = null;
+        this._listener = null;
         this._onError = null;
         this._onFinally = null;
-    }
-    subscribe(fn, once) {
-        if (this.isSubscribed() == false) {
-            return this;
-        }
-        if (typeof (fn) !== 'function' || typeof (this._fn) === 'function') {
-            return this;
-        }
-        this._fn = fn;
-        this._once = once ? true : false;
-        return this;
     }
     catch(fn) {
         if (typeof (fn) === 'function') {
@@ -161,13 +151,8 @@ class Observer {
         if (this.isSubscribed() == false) {
             return;
         }
-        if (this._once) {
-            this.unsubscribe();
-        }
         try {
-            if (typeof (this._fn) === 'function') {
-                this._fn(ev);
-            }
+            this._listener(ev);
         }
         catch (err) {
             if (typeof (this._onError) === 'function') {
@@ -175,25 +160,21 @@ class Observer {
             }
         }
         finally {
+            this._once ? this.unsubscribe() : void 0;
             if (typeof (this._onFinally) === 'function') {
                 this._onFinally();
             }
         }
     }
-    asPromise(ev) {
+    performObservationAsAsync(ev) {
         if (this.isSubscribed() == false) {
             return waiter(this, function* () {
                 return;
             });
         }
-        if (this._once) {
-            this.unsubscribe();
-        }
         return waiter(this, function* () {
             try {
-                if (typeof (this._fn) === 'function') {
-                    yield this._fn(ev);
-                }
+                yield this._listener(ev);
             }
             catch (err) {
                 if (typeof (this._onError) === 'function') {
@@ -201,6 +182,7 @@ class Observer {
                 }
             }
             finally {
+                this._once ? this.unsubscribe() : void 0;
                 if (typeof (this._onFinally) === 'function') {
                     yield this._onFinally();
                 }
@@ -209,19 +191,17 @@ class Observer {
         });
     }
     getListener() {
-        return this._fn;
+        return this._listener;
     }
     isSubscribed() {
-        return this._isSubscribed;
+        return this._listener ? true : false;
     }
     unsubscribe() {
-        this._isSubscribed = false;
+        this._listener = null;
     }
 }
 
 ;// CONCATENATED MODULE: ./src/event-dispatcher/event-dispatcher.ts
-
-
 function performanceViolationCheck(handler, time) {
     if (time > 50) {
         console.warn(`[Violation] '${handler}' handler took ${time.toFixed(0)}ms to execute.`);
@@ -239,10 +219,10 @@ class EventDispatcher {
     addEventListener(type, listener, once) {
         this.addEventType(type);
         if (this.__listeners_[type].get(listener) instanceof Observer) {
-            return this.__listeners_[type].get(listener).subscribe(listener);
+            return this.__listeners_[type].get(listener);
         }
-        this.__listeners_[type].set(listener, new Observer());
-        return this.__listeners_[type].get(listener).subscribe(listener, once);
+        this.__listeners_[type].set(listener, new Observer(listener, once));
+        return this.__listeners_[type].get(listener);
     }
     hasEventListener(type, listener) {
         try {
@@ -280,10 +260,7 @@ class EventDispatcher {
         for (const proc of procs) {
             const target = proc[0];
             const observer = proc[1];
-            if (target !== observer.getListener()) {
-                observer.unsubscribe();
-            }
-            if (observer.isSubscribed() === false) {
+            if (target !== observer.getListener() || observer.isSubscribed() === false) {
                 observer.destructor();
                 procs.delete(target);
                 continue;
@@ -311,17 +288,14 @@ class EventDispatcher {
             for (const proc of procs) {
                 const target = proc[0];
                 const observer = proc[1];
-                if (target !== observer.getListener()) {
-                    observer.unsubscribe();
-                }
-                if (observer.isSubscribed() === false) {
+                if (target !== observer.getListener() || observer.isSubscribed() === false) {
                     observer.destructor();
                     procs.delete(target);
                     continue;
                 }
                 try {
                     const start = performance.now();
-                    yield observer.asPromise(event);
+                    yield observer.performObservationAsAsync(event);
                     const end = performance.now();
                     performanceViolationCheck(type, end - start);
                 }
@@ -340,8 +314,6 @@ function logError(err) {
 }
 
 ;// CONCATENATED MODULE: ./src/core/frame-handler.ts
-
-
 class FrameEvent {
     constructor(currentTime, deltaTime, totalElapsedTime) {
         this.currentTime = currentTime;
@@ -407,7 +379,6 @@ class FrameHandler {
 ;// CONCATENATED MODULE: ./src/api.ts
 function toGlobal(root) {
     root['wait'] = root['wait'] ? root['wait'] : wait;
-    root['waiter'] = root['waiter'] ? root['waiter'] : waiter;
     root['EventDispatcherObserver'] = root['EventDispatcherObserver'] ? root['EventDispatcherObserver'] : Observer;
     root['EventDispatcher'] = root['EventDispatcher'] ? root['EventDispatcher'] : EventDispatcher;
     root['FrameEvent'] = root['FrameEvent'] ? root['FrameEvent'] : FrameEvent;

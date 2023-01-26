@@ -30,7 +30,6 @@ import { Api } from "./api";
 exports:
 
 	window.wait;
-	window.waiter;
 	window.EventDispatcherObserver;
   window.EventDispatcher;
 	window.FrameEvent;
